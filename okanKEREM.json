@@ -1,0 +1,554 @@
+{
+  "name": "My workflow 3",
+  "nodes": [
+    {
+      "parameters": {
+        "fileSelector": "/data/sheets/userNames.csv",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -2960,
+        -160
+      ],
+      "id": "53f36ba9-0b60-4a90-98d5-4ab94b410d97",
+      "name": "Read/Write Files from Disk"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -2760,
+        -200
+      ],
+      "id": "2924ccae-269c-4a88-a9ef-76c5ea241808",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "fileSelector": "/data/output/reklam.jpg",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.readWriteFile",
+      "typeVersion": 1,
+      "position": [
+        -3360,
+        -160
+      ],
+      "id": "d05959ad-b3be-4472-b053-9bfef0d5b427",
+      "name": "Read/Write Files from Disk1"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Extract from File').item.json.emailler }}",
+        "subject": "Session Sonlandırılmıştır ilginiz için teşekkürler.",
+        "emailType": "text",
+        "message": "cart",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -1920,
+        380
+      ],
+      "id": "3daf5993-2c70-49ea-8227-aa97c49b6435",
+      "name": "Send a message",
+      "webhookId": "dd105f0d-6658-4eed-9b6d-2a791da5d6fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lDgwn8SECWSX8Al8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $json.emailler }}",
+        "subject": "Approval",
+        "message": "Deneme",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -2420,
+        -260
+      ],
+      "id": "4309b569-6e1a-4d21-9b83-45be163a1b64",
+      "name": "Send message and wait for response",
+      "webhookId": "1f85be18-ac8c-46dc-9207-82cddc2c096f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lDgwn8SECWSX8Al8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -3100,
+        60
+      ],
+      "id": "26d4751c-c808-4fdf-903c-24a5818442b5",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "GPT-3.5-TURBO"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.data }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -1560,
+        -280
+      ],
+      "id": "9c4a46bb-5c89-408b-a22c-bacff75c1bbf",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "d4BlmWS9bVa28Z5N",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c4ac989c-2a51-4e54-b062-e5e3694d88a8",
+              "name": "data",
+              "value": "=Sen bir müşteri temsilcisisin sana böyle bir soru geliyor  {{ $json.result }}\n\n",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1860,
+        -340
+      ],
+      "id": "64e385cc-6d3e-4130-9ebe-ddc06284f1a1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "938a29ef-e59d-4a59-973b-e52f4c4b7dbc",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -2240,
+        -100
+      ],
+      "id": "e1a4b5c5-cc43-46cb-bea5-0b43abee58f3",
+      "name": "If1"
+    },
+    {
+      "parameters": {
+        "jsCode": "\nconst result = $input.first().json.data.text.includes(\"Talisca\");\n\nreturn [\n  {\n    json: {\n      result: result,\n      data :$input.first().json.data.text\n      // true veya false\n    }\n  }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2380,
+        280
+      ],
+      "id": "81fc45c5-ab9a-49e2-9aab-5d190709fe37",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAndWait",
+        "sendTo": "={{ $('Extract from File').item.json.emailler }}",
+        "subject": "Approval",
+        "message": "=Deneme {{ $json.response }}",
+        "responseType": "freeText",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -960,
+        -440
+      ],
+      "id": "82e64612-a0e2-4eea-b273-51e85af68cb3",
+      "name": "Send message and wait for response1",
+      "webhookId": "1f85be18-ac8c-46dc-9207-82cddc2c096f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lDgwn8SECWSX8Al8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "44274d1c-63d6-45ad-803f-6cc6326522a3",
+              "name": "response",
+              "value": "={{ $json.message.content }} \n\n Eğer sessionun bitmesini istiyorsanız \"talisca\" yazmanız yeterli",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1260,
+        -460
+      ],
+      "id": "6435549f-0d39-4f55-965d-149d4b5ea889",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const result = $input.first().json.data.text.includes(\"Talisca\");\n\nreturn [\n  {\n    json: {\n      result: result,\n      data :$input.first().json.data.text // true veya false\n    }\n  }\n]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -620,
+        -360
+      ],
+      "id": "da403e87-c46e-4e97-9e48-3af9405eb690",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "938a29ef-e59d-4a59-973b-e52f4c4b7dbc",
+              "leftValue": "={{ $json.result }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1160,
+        20
+      ],
+      "id": "431b9f37-14b3-461d-89a2-251a723607d1",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Extract from File').item.json.emailler }}",
+        "subject": "Session Sonlandırılmıştır ilginiz için teşekkürler.",
+        "emailType": "text",
+        "message": "cart",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -760,
+        -80
+      ],
+      "id": "06c9a587-25c8-43a3-89bb-7bf983c34d18",
+      "name": "Send a message1",
+      "webhookId": "dd105f0d-6658-4eed-9b6d-2a791da5d6fb",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lDgwn8SECWSX8Al8",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "3c8432a5-4553-42f8-8e06-6bfa999da90b"
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -1520,
+        -580
+      ],
+      "id": "b8039f12-b2a2-4aeb-8a32-86036b14a6ea",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "jsCode": "const degisken1 =$input.first().json.data\nconst degisken2=$input.first().json.data\nconst result=degisken2||degisken1\n\nreturn {result}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1740,
+        -60
+      ],
+      "id": "92802956-d8d3-4aa9-9cc4-6da0079343d0",
+      "name": "Code2"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Read/Write Files from Disk": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Read/Write Files from Disk",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send message and wait for response1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Send message and wait for response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Send a message1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f1db710a-ef4d-404a-8d18-399248c8cdb5",
+  "meta": {
+    "instanceId": "33d3118021c86740b1a15c617d0d9d55d063df19d7374e00a1b8953c3734f20d"
+  },
+  "id": "UGdEee2V8K5gvQvR",
+  "tags": []
+}
